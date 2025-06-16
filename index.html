@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Presentation Template</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e  50%, #16213e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #4a5568;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            z-index: 1000;
+            border-top: 2px solid #4a5568;
+        }
+
+        .slide {
+            position: absolute;
+            top: 80px;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            display: none;
+            padding: 40px;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .terminal-window {
+            width: 85%;
+            max-width: 1200px;
+            height: 85%;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+        }
+
+        .terminal-header {
+            background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 2px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27ca3f; }
+
+        .terminal-title {
+            color: #a0aec0;
+            margin-left: auto;
+        }
+
+        .terminal-body {
+            background: #1a202c;
+            flex: 1;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, #4fd1c7 0%, #06b6d4 50%, #3b82f6 100%);
+        }
+
+        .prompt {
+            color: #4fd1c7;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .prompt::before {
+            content: '❯ ';
+            color: #06b6d4;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #4fd1c7, #06b6d4, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #4fd1c7;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .content-with-image {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+            height: 100%;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 50%;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #4a5568;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .code-block {
+            background: #2d3748;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #4fd1c7;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .code-block::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            background: #4fd1c7;
+            color: #1a202c;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .bullet-point {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #e0e0e0;
+        }
+
+        .bullet-point::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: #4fd1c7;
+        }
+
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
+            padding: 8px 20px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-left {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-icon {
+            color: #4fd1c7;
+        }
+
+        .navigation {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #4a5568;
+            border-color: #4fd1c7;
+            color: #4fd1c7;
+        }
+
+        .slide-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #2d3748;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #a0aec0;
+            border: 1px solid #4a5568;
+        }
+
+        .highlight {
+            color: #4fd1c7;
+            font-weight: 500;
+        }
+
+        .secondary-highlight {
+            color: #06b6d4;
+            font-weight: 500;
+        }
+
+        .accent {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .typing-animation {
+            border-right: 2px solid #4fd1c7;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: #4fd1c7; }
+            51%, 100% { border-color: transparent; }
+        }
+
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(79, 209, 199, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79, 209, 199, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .text-content p {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        /* Help Dialog Styles */
+        .help-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 32, 44, 0.97);
+            padding: 40px 40px 30px 40px;
+            border-radius: 12px;
+            border: 2.5px solid #4fd1c7;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            min-width: 400px;
+            min-height: 180px;
+            max-width: 700px;
+            max-height: 70vh;
+            overflow-y: auto;
+            z-index: 2000;
+            display: none;
+            color: #e0e0e0;
+            font-size: 1.15rem;
+            line-height: 1.7;
+        }
+
+        .help-dialog.active {
+            display: block;
+        }
+
+        .help-label {
+            position: absolute;
+            top: -22px;
+            left: 30px;
+            background: #4fd1c7;
+            color: #1a202c;
+            padding: 4px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+            display: none;
+        }
+
+        .help-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Help Dialog -->
+        <div class="help-overlay"></div>
+        <div class="help-dialog">
+            <div class="help-label">Help</div>
+            <div class="help-content"></div>
+        </div>
+
+        <div class="header">
+            <div class="slide-indicator">
+                <span id="current-slide">1</span> / <span id="total-slides">0</span>
+            </div>
+        </div>
+
+        <div id="slides-container"></div>
+
+        <div class="footer">
+            <div class="navigation">
+                <button class="nav-btn" onclick="previousSlide()">← Prev</button>
+                <button class="nav-btn" onclick="nextSlide()">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SLIDE CONFIGURATION - Now loaded from slides.json
+        let slideData = [];
+        let currentSlide = 0;
+        let totalSlides = 0;
+
+        // Load slides from JSON file
+        async function loadSlides() {
+            try {
+                const response = await fetch('/api/slides');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                slideData = await response.json();
+                initializePresentation();
+            } catch (error) {
+                console.error('Failed to load slides:', error);
+                // Fallback to empty presentation
+                slideData = [
+                    {
+                        type: 'title',
+                        terminal: 'error.zsh',
+                        prompt: 'cat error.log',
+                        title: 'Failed to Load Slides',
+                        bullets: ['Check slides.json file', 'Verify server is running'],
+                        status: {
+                            left: [{ icon: '❌', text: 'error' }],
+                            right: 'Error'
+                        }
+                    }
+                ];
+                initializePresentation();
+            }
+        }
+
+        // Setup auto-reload functionality
+        function setupAutoReload() {
+            const eventSource = new EventSource('/api/reload');
+
+            eventSource.onmessage = function(event) {
+                if (event.data === 'reload') {
+                    console.log('📝 slides.json updated - reloading presentation...');
+                    const currentSlideNum = currentSlide;
+                    loadSlides().then(() => {
+                        // Try to maintain current slide position
+                        if (currentSlideNum < totalSlides) {
+                            showSlide(currentSlideNum);
+                        }
+                    });
+                }
+            };
+
+            eventSource.onerror = function(event) {
+                console.log('Auto-reload connection lost - manual refresh may be needed');
+            };
+        }
+
+        function createSlide(data, index) {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            if (index === 0) slide.classList.add('active');
+
+            const hasImage = data.image;
+
+            // Add date to title slide if it's missing
+            const dateStr = data.date || new Date().toISOString().split('T')[0];
+
+            slide.innerHTML = `
+                <div class="terminal-window">
+                    <div class="grid-bg"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <div class="dot red"></div>
+                            <div class="dot yellow"></div>
+                            <div class="dot green"></div>
+                        </div>
+                        <div class="terminal-title">${data.terminal}</div>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="prompt">${data.prompt}</div>
+                        <div class="content ${hasImage ? 'content-with-image' : ''}">
+                            <div class="text-content">
+                                ${data.type === 'title' ?
+                                    `<h1 class="typing-animation">${data.title}</h1>
+                                     ${data.code ? `<div class="code-block" data-lang="${data.code.lang}">${data.code.content}</div>` : `<div class="code-block" data-lang="info">Author: ${data.author}\nDate: ${dateStr}\nVersion: ${data.version || '1.0.0'}\nTheme: powerlevel10k-inspired</div>`}`
+                                    : `<h2>${data.title}</h2>`
+                                }
+                                ${data.bullets ? data.bullets.map(bullet => `<div class="bullet-point">${bullet}</div>`).join('') : ''}
+                                ${data.text ? `<div class="text-content">${data.text.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}</div>` : ''}
+                                ${data.code && data.type !== 'title' ? `<div class="code-block" data-lang="${data.code.lang}">${data.code.content}</div>` : ''}
+                            </div>
+                            ${hasImage ? `<div class="image-content"><img src="${data.image}" alt="Slide image" class="slide-image"></div>` : ''}
+                        </div>
+                    </div>
+                    <div class="status-bar">
+                        <div class="status-left">
+                            ${data.status.left.map(item => `
+                                <div class="status-item">
+                                    <span class="status-icon">${item.icon}</span>
+                                    <span>${item.text}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div>${data.status.right}</div>
+                    </div>
+                </div>
+            `;
+
+            return slide;
+        }
+
+        function initializePresentation() {
+            const container = document.getElementById('slides-container');
+            container.innerHTML = ''; // Clear existing slides
+
+            // Always keep slides 1 and 2, then add dynamic slides
+            const orderedSlides = [
+                slideData[0], // Title slide
+                ...slideData.slice(2), // Dynamic slides
+                slideData[1]  // Conclusion slide
+            ];
+
+            totalSlides = orderedSlides.length;
+            document.getElementById('total-slides').textContent = totalSlides;
+
+            orderedSlides.forEach((data, index) => {
+                const slide = createSlide(data, index);
+                container.appendChild(slide);
+            });
+
+            // Reset to first slide if current slide is out of bounds
+            if (currentSlide >= totalSlides) {
+                currentSlide = 0;
+            }
+            showSlide(currentSlide);
+        }
+
+        // Initialize presentation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSlides();
+            setupAutoReload();
+        });
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Initialize presentation
+        // initializePresentation(); // Removed - now called from loadSlides()
+
+        // Auto-start typing animation
+        setTimeout(() => {
+            const typingElement = document.querySelector('.typing-animation');
+            if (typingElement) {
+                typingElement.style.animation = 'blink 1s infinite';
+            }
+        }, 1000);
+
+        // Help dialog functionality
+        let helpVisible = false;
+        const helpDialog = document.querySelector('.help-dialog');
+        const helpOverlay = document.querySelector('.help-overlay');
+        const helpContent = document.querySelector('.help-content');
+
+        function updateHelpDialog() {
+            helpContent.innerHTML = (slideData[currentSlide] && slideData[currentSlide].help) ? slideData[currentSlide].help : 'No help text available for this slide.';
+        }
+
+        function toggleHelp(forceState) {
+            if (typeof forceState === 'boolean') helpVisible = forceState;
+            else helpVisible = !helpVisible;
+            helpDialog.classList.toggle('active', helpVisible);
+            helpOverlay.classList.toggle('active', helpVisible);
+            if (helpVisible) updateHelpDialog();
+        }
+
+        // Add keyboard event listener for navigation and help
+        document.addEventListener('keydown', (e) => {
+            if (helpVisible) {
+                // Only allow closing help
+                if (e.key.toLowerCase() === 'h' || e.key === 'Escape') {
+                    toggleHelp(false);
+                    e.preventDefault();
+                }
+                return;
+            }
+            if (e.key.toLowerCase() === 'h') {
+                toggleHelp(true);
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+                e.preventDefault();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+                e.preventDefault();
+            }
+        });
+
+        // Close help dialog when clicking overlay
+        helpOverlay.addEventListener('click', () => {
+            if (helpVisible) {
+                toggleHelp(false);
+            }
+        });
+
+        // Update help dialog on slide change
+        const originalShowSlide = showSlide;
+        showSlide = function(n) {
+            originalShowSlide(n);
+            if (helpVisible) updateHelpDialog();
+        }
+    </script>
+</body>
+</html>

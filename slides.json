@@ -1,0 +1,134 @@
+[
+    {
+        "type": "title",
+        "terminal": "presentation.zsh",
+        "prompt": "presentation --title",
+        "title": "Designing least-privilege IAM policies at scale",
+        "subtitle": "Modern Terminal-Inspired Design",
+        "author": "David Cohan",
+        "version": "1.0.0",
+        "help": "This presentation covers best practices for implementing least-privilege IAM policies in large-scale environments. We'll explore automated approaches to policy management, security enforcement, and compliance monitoring.",
+        "bullets": [
+            "Scalable IAM policy design patterns",
+            "Automated <span class=\"highlight\">least-privilege</span> enforcement",
+            "Enterprise security at <span class=\"secondary-highlight\">scale</span>"
+        ],
+        "status": {
+            "left": [
+                { "icon": "⚡", "text": "powerlevel10k" },
+                { "icon": "📁", "text": "~/iam-policies" },
+                { "icon": "🌿", "text": "main" }
+            ],
+            "right": "Ready"
+        }
+    },
+    {
+        "type": "conclusion",
+        "terminal": "conclusion.zsh",
+        "prompt": "presentation --summary",
+        "title": "Thank You!",
+        "help": "This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.",
+        "bullets": [
+            "Questions & Discussion",
+            "Contact: <span class=\"highlight\">cohandv@gmail.com</span>",
+            "GitHub: <span class=\"secondary-highlight\">@cohandv</span>"
+        ],
+        "code": {
+            "lang": "bash",
+            "content": "# Let's connect and collaborate\ngit clone https://github.com/cohandv/ambientpresentation\ncd ambientpresentation && npm install\nnpm start # Let's build something awesome!"
+        },
+        "status": {
+            "left": [
+                { "icon": "⚡", "text": "powerlevel10k" },
+                { "icon": "✨", "text": "complete" },
+                { "icon": "🎯", "text": "success" }
+            ],
+            "right": "Complete"
+        }
+    },
+    {
+        "type": "content",
+        "terminal": "overview.zsh",
+        "prompt": "cat iam-overview.md",
+        "title": "IAM Policy Challenges 3",
+        "help": "This slide highlights the common challenges in IAM policy management: over-privileged access being the default, manual policy creation being unscalable, and the need for comprehensive audit trails. The example shows a typical overly permissive policy that grants full access.",
+        "bullets": [
+            "Over-privileged access is the <span class=\"highlight\">norm</span>",
+            "Manual policy creation doesn't <span class=\"secondary-highlight\">scale</span>",
+            "Compliance requires <span class=\"accent\">audit trails</span>"
+        ],
+        "code": {
+            "lang": "json",
+            "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": \"*\",\n    \"Resource\": \"*\"\n  }]\n}"
+        },
+        "status": {
+            "left": [
+                { "icon": "⚡", "text": "powerlevel10k" },
+                { "icon": "📄", "text": "overview.md" },
+                { "icon": "⚠️", "text": "over-privileged" }
+            ],
+            "right": "Problem"
+        }
+    },
+    {
+        "type": "demo",
+        "terminal": "solution.zsh",
+        "prompt": "./analyze-permissions.sh",
+        "title": "Automated Policy Generation",
+        "help": "This slide demonstrates our automated policy generation solution. The Python code shows how we analyze CloudTrail logs to determine actual resource usage and generate minimal required permissions. The system tracks user actions over 30 days to build accurate policy recommendations.",
+        "bullets": [
+            "CloudTrail analysis for actual usage",
+            "Automated policy recommendations",
+            "Continuous compliance monitoring"
+        ],
+        "code": {
+            "lang": "python",
+            "content": "# Policy analyzer\ndef analyze_cloudtrail_logs(user_arn):\n    events = get_user_events(user_arn, days=30)\n    actions = extract_actions(events)\n    return generate_minimal_policy(actions)\n\npolicy = analyze_cloudtrail_logs(\"arn:aws:iam::123:user/dev\")\nprint(json.dumps(policy, indent=2))"
+        },
+        "status": {
+            "left": [
+                { "icon": "⚡", "text": "powerlevel10k" },
+                { "icon": "🔧", "text": "analyzer.py" },
+                { "icon": "🚀", "text": "running" }
+            ],
+            "right": "Solution"
+        }
+    },
+    {
+        "type": "content",
+        "terminal": "architecture.zsh",
+        "prompt": "cat architecture.md",
+        "title": "System Architecture",
+        "help": "This slide outlines the system architecture for our IAM policy management solution. It shows how we process events, track permissions in real-time, and generate compliance reports. The architecture is designed to be scalable and maintainable.",
+        "bullets": [
+            "Event-driven policy analysis",
+            "Real-time permission tracking",
+            "Automated compliance reporting"
+        ],
+        "image": "https://via.placeholder.com/600x400/2d3748/4fd1c7?text=IAM+Policy+Pipeline",
+        "status": {
+            "left": [
+                { "icon": "⚡", "text": "powerlevel10k" },
+                { "icon": "🏗️", "text": "architecture.md" },
+                { "icon": "📊", "text": "pipeline" }
+            ],
+            "right": "Architecture"
+        }
+    },
+    {
+        "type": "content",
+        "terminal": "results.zsh",
+        "prompt": "cat results.md",
+        "title": "Implementation Results",
+        "help": "This slide presents the concrete results of implementing our automated IAM policy solution. The metrics show significant improvements in security posture, including reduced over-privileged access, faster policy deployment, and improved compliance rates.",
+        "text": "After implementing automated least-privilege IAM policies across our infrastructure, we achieved significant improvements in security posture.\n\nKey metrics include 85% reduction in over-privileged access, 60% faster policy deployment, and 100% compliance audit success rate.\n\nThe system now automatically analyzes CloudTrail logs, generates minimal policies, and provides continuous monitoring for policy drift.",
+        "status": {
+            "left": [
+                { "icon": "⚡", "text": "powerlevel10k" },
+                { "icon": "📈", "text": "results.md" },
+                { "icon": "✅", "text": "success" }
+            ],
+            "right": "Results"
+        }
+    }
+]
