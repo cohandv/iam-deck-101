@@ -417,6 +417,25 @@
             font-size: 1.15rem;
             line-height: 1.7;
         }
+
+        .help-dialog.image-only .help-content {
+            display: none;
+        }
+        .help-dialog.image-only .help-dialog-image {
+            display: block;
+            max-width: 90vw;
+            max-height: 80vh;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        .help-dialog-image {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-width: 90vw;
+            max-height: 80vh;
+        }
     </style>
 </head>
 <body>
@@ -425,6 +444,7 @@
         <div class="help-overlay"></div>
         <div class="help-dialog">
             <div class="help-label">Help</div>
+            <img class="help-dialog-image" style="display:none;" />
             <div class="help-content"></div>
         </div>
 
@@ -589,6 +609,7 @@
             currentSlide = n;
             slides[currentSlide].classList.add('active');
             document.getElementById('current-slide').textContent = currentSlide + 1;
+            addSlideImageHelpListeners();
             console.log('showSlide set currentSlide to:', currentSlide);
         }
 
@@ -622,15 +643,28 @@
         const helpDialog = document.querySelector('.help-dialog');
         const helpOverlay = document.querySelector('.help-overlay');
         const helpContent = document.querySelector('.help-content');
+        const helpDialogImage = document.querySelector('.help-dialog-image');
 
+        let helpImageOnly = false;
         function updateHelpDialog() {
             const slide = slideData[currentSlide];
-            helpContent.innerHTML = (slide && slide.help) ? slide.help : 'No help text available for this slide.';
+            if (helpImageOnly && slide && slide.image) {
+                helpDialog.classList.add('image-only');
+                helpDialogImage.src = slide.image;
+                helpDialogImage.style.display = 'block';
+                helpContent.style.display = 'none';
+            } else {
+                helpDialog.classList.remove('image-only');
+                helpDialogImage.style.display = 'none';
+                helpContent.style.display = '';
+                helpContent.innerHTML = (slide && slide.help) ? slide.help : 'No help text available for this slide.';
+            }
         }
 
-        function toggleHelp(forceState) {
+        function toggleHelp(forceState, imageOnly = false) {
             if (typeof forceState === 'boolean') helpVisible = forceState;
             else helpVisible = !helpVisible;
+            helpImageOnly = imageOnly;
             helpDialog.classList.toggle('active', helpVisible);
             helpOverlay.classList.toggle('active', helpVisible);
             if (helpVisible) updateHelpDialog();
@@ -658,9 +692,14 @@
             }
         });
 
-        // Close help dialog when clicking overlay
+        // Close help dialog when clicking overlay or dialog background (but not the image)
         helpOverlay.addEventListener('click', () => {
             if (helpVisible) {
+                toggleHelp(false);
+            }
+        });
+        helpDialog.addEventListener('click', (e) => {
+            if (helpVisible && helpImageOnly && e.target === helpDialog) {
                 toggleHelp(false);
             }
         });
@@ -680,6 +719,19 @@
                 : '<span style="opacity:0.5;">&nbsp;</span>';
             document.querySelector('.status-left').innerHTML = left;
             document.querySelector('.status-right').innerHTML = right;
+        }
+
+        function addSlideImageHelpListeners() {
+            const activeSlide = document.querySelector('.slide.active');
+            if (!activeSlide) return;
+            const slideImages = activeSlide.querySelectorAll('.slide-image');
+            slideImages.forEach(img => {
+                img.style.cursor = 'pointer';
+                img.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleHelp(true, true);
+                };
+            });
         }
     </script>
 </body>
