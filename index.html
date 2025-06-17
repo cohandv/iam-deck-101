@@ -610,6 +610,7 @@
             slides[currentSlide].classList.add('active');
             document.getElementById('current-slide').textContent = currentSlide + 1;
             addSlideImageHelpListeners();
+            updateFooterStatusBar();
             console.log('showSlide set currentSlide to:', currentSlide);
         }
 
