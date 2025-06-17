@@ -7,7 +7,7 @@
         "subtitle": "Modern Terminal-Inspired Design",
         "author": "David Cohan",
         "version": "1.0.0",
-        "help": "This presentation covers best practices for implementing least-privilege IAM policies in large-scale environments. We'll explore automated approaches to policy management, security enforcement, and compliance monitoring.",
+        "help": "Today, I want to share how we tackled the challenge of designing least-privilege IAM policies at scale. This journey is about more than just security—it's about building systems that grow with your organization, while keeping things safe and manageable. Let's explore the patterns, the automation, and the lessons we learned along the way.",
         "bullets": [
             "Scalable IAM policy design patterns",
             "Automated <span class=\"highlight\">least-privilege</span> enforcement",
@@ -23,11 +23,262 @@
         }
     },
     {
+        "type": "introduction",
+        "terminal": "iam.zsh",
+        "prompt": "iam --scale --enterprise",
+        "title": "The Starting Point",
+        "subtitle": "What We Inherited",
+        "help": "When we began, our environment was a patchwork of over a hundred engineers, spread across a dozen teams, each with broad access to more than fifty AWS accounts. There was no central control, and admin privileges were handed out just to keep things moving. Audit trails were missing, credentials were often shared, and a looming PCI DSS deadline forced us to rethink everything about how we managed identity and access.",
+        "bullets": [
+            "100+ Engineers across 10-12 teams with broad permissions",
+            "50+ AWS accounts with no centralized governance",
+            "Admin-level access everywhere for operational speed",
+            "No audit trail, shared credentials",
+            "PCI DSS compliance deadline approaching"
+        ],
+        "code": {
+            "lang": "bash",
+            "content": "# The chaos we started with\naws iam list-users --max-items 100\n# Result: Hundreds of overprivileged accounts\necho \"Security debt: CRITICAL\""
+        },
+        "status": {
+            "left": [
+                { "icon": "⚠️", "text": "100+ engineers" },
+                { "icon": "🔥", "text": "security debt" },
+                { "icon": "📋", "text": "PCI deadline" }
+            ],
+            "right": "Problem"
+        },
+        "metrics": {
+            "accounts": "50+",
+            "engineers": "100+",
+            "teams": "10-12",
+            "compliance_status": "non-compliant"
+        }
+    },
+    {
+        "type": "foundation",
+        "terminal": "organizations.zsh",
+        "prompt": "aws organizations --setup",
+        "title": "AWS Organizations Foundation",
+        "subtitle": "Centralized Governance",
+        "help": "Our first step was to bring order to the chaos. We used AWS Organizations to create a solid foundation, setting up a master account for centralized billing and control. We organized our environments so each one had both shared services and dedicated business unit accounts. CloudTrail was enabled everywhere, giving us the audit logs we desperately needed. And by managing everything with Terraform, we ensured that our security baselines were consistent and reliable across the board.",
+        "bullets": [
+            "Master account with centralized billing",
+            "Environment structure: shared services + business unit accounts",
+            "CloudTrail enabled across all accounts",
+            "Terraform-managed provisioning and baselines"
+        ],
+        "code": {
+            "lang": "hcl",
+            "content": "resource \"aws_organizations_organization\" \"main\" {\n  aws_service_access_principals = [\n    \"cloudtrail.amazonaws.com\",\n    \"config.amazonaws.com\"\n  ]\n  feature_set = \"ALL\"\n}"
+        },
+        "status": {
+            "left": [
+                { "icon": "🏗️", "text": "foundation" },
+                { "icon": "📊", "text": "centralized" },
+                { "icon": "🔧", "text": "terraform" }
+            ],
+            "right": "Built"
+        },
+        "metrics": {
+            "management_overhead": "reduced",
+            "audit_coverage": "100%",
+            "baseline_compliance": "enforced"
+        }
+    },
+    {
+        "type": "guardrails",
+        "terminal": "scp.zsh",
+        "prompt": "aws organizations --scp",
+        "title": "Service Control Policies",
+        "subtitle": "Organization-Level Guardrails",
+        "help": "To keep our organization safe, we put guardrails in place using Service Control Policies. These policies acted as a safety net, blocking risky actions before they could happen. We set up restrictions that were tighter in production, and made sure that accidental resource deletions were prevented. With these controls, we blocked access to unwanted AWS regions and high-risk services, and we saw a real drop in security incidents almost immediately.",
+        "bullets": [
+            "Preventive controls blocking dangerous actions",
+            "Environment-specific restrictions",
+            "Production protections (no resource deletion)",
+            "<span class=\"highlight\">Results</span>: Blocked unwanted regions/services, prevented accidents"
+        ],
+        "code": {
+            "lang": "json",
+            "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Deny\",\n    \"Action\": [\"ec2:TerminateInstances\"],\n    \"Resource\": \"*\",\n    \"Condition\": {\n      \"StringNotEquals\": {\n        \"aws:PrincipalTag/Environment\": \"Production\"\n      }\n    }\n  }]\n}"
+        },
+        "status": {
+            "left": [
+                { "icon": "🛡️", "text": "preventive" },
+                { "icon": "🚫", "text": "restrictions" },
+                { "icon": "✅", "text": "effective" }
+            ],
+            "right": "Protected"
+        },
+        "metrics": {
+            "incidents_prevented": "multiple",
+            "regions_blocked": "non-approved",
+            "production_safety": "enforced"
+        }
+    },
+    {
+        "type": "compliance",
+        "terminal": "iam-users.zsh",
+        "prompt": "iam --pci-compliance",
+        "title": "IAM Users - PCI Reality",
+        "subtitle": "Compliance Requirements",
+        "help": "PCI DSS compliance changed the way we managed users. We had to create individual accounts for every engineer, enforce MFA everywhere, and rotate access keys every ninety days. CloudTrail gave us the audit trails we needed, but it also meant managing credentials became more complex. It wasn't the most modern approach, but it was the trade-off we had to make to meet our compliance goals.",
+        "bullets": [
+            "Individual named accounts (firstname.lastname)",
+            "MFA enforcement + 90-day key rotation",
+            "Complete audit trail via CloudTrail",
+            "<span class=\"secondary-highlight\">Trade-off</span>: Complex credential management vs. compliance"
+        ],
+        "code": {
+            "lang": "bash",
+            "content": "# PCI DSS compliant user creation\naws iam create-user --user-name john.doe\naws iam attach-user-policy --user-name john.doe \\n  --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword\necho \"MFA required for all access\""
+        },
+        "status": {
+            "left": [
+                { "icon": "👤", "text": "individual" },
+                { "icon": "🔐", "text": "MFA enforced" },
+                { "icon": "📋", "text": "PCI compliant" }
+            ],
+            "right": "Compliant"
+        },
+        "metrics": {
+            "audit_trail": "complete",
+            "mfa_coverage": "100%",
+            "rotation_cycle": "90 days"
+        }
+    },
+    {
+        "type": "boundaries",
+        "terminal": "boundaries.zsh",
+        "prompt": "iam --permission-boundaries",
+        "title": "Permission Boundaries",
+        "subtitle": "Safety Net Implementation",
+        "help": "Permission boundaries became our ultimate safety net. They defined the maximum permissions anyone could have, no matter what other policies were attached. This let developers work more independently, but always within secure guardrails. We set standard boundaries that allowed common services like EC2, S3, and Lambda, but blocked access to IAM and Organizations management. After this change, we didn't have a single privilege escalation incident, and developers had the freedom they needed without sacrificing security.",
+        "bullets": [
+            "Maximum permission limits regardless of policies",
+            "Developer self-service within guardrails",
+            "Standard boundary: allow EC2/S3/Lambda, deny IAM/Orgs",
+            "<span class=\"highlight\">Result</span>: Zero privilege escalation incidents"
+        ],
+        "code": {
+            "lang": "json",
+            "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": [\"ec2:*\", \"s3:*\", \"lambda:*\"],\n    \"Resource\": \"*\"\n  }, {\n    \"Effect\": \"Deny\", \n    \"Action\": [\"iam:*\", \"organizations:*\"],\n    \"Resource\": \"*\"\n  }]\n}"
+        },
+        "status": {
+            "left": [
+                { "icon": "🛡️", "text": "boundaries" },
+                { "icon": "🔒", "text": "secure" },
+                { "icon": "✨", "text": "zero incidents" }
+            ],
+            "right": "Secured"
+        },
+        "metrics": {
+            "escalation_incidents": "0",
+            "self_service_adoption": "high",
+            "boundary_violations": "0"
+        }
+    },
+    {
+        "type": "infrastructure",
+        "terminal": "terraform.zsh",
+        "prompt": "terraform --iam-scale",
+        "title": "Terraform at Scale",
+        "subtitle": "Infrastructure as Code",
+        "help": "Terraform was the key to scaling our IAM management. We built standardized role modules for common patterns like EC2, Lambda, and EKS. Permission boundaries were applied automatically, and every change was version-controlled and reviewed. Trust relationships were consistent, and human error was virtually eliminated. This infrastructure-as-code approach gave us the consistency and auditability we needed to manage IAM at scale.",
+        "bullets": [
+            "Standardized role modules (EC2, Lambda, EKS)",
+            "Automatic permission boundary application",
+            "Version-controlled IAM with review process",
+            "Consistent trust relationships"
+        ],
+        "code": {
+            "lang": "hcl",
+            "content": "module \"application_role\" {\n  source = \"./modules/iam-application-role\"\n  \n  role_name = \"${var.app_name}-${var.environment}-role\"\n  trusted_services = [\"ec2.amazonaws.com\"]\n  permission_boundary_arn = data.aws_iam_policy.boundary.arn\n}"
+        },
+        "status": {
+            "left": [
+                { "icon": "🏗️", "text": "standardized" },
+                { "icon": "🔄", "text": "automated" },
+                { "icon": "📝", "text": "version controlled" }
+            ],
+            "right": "Scaled"
+        },
+        "metrics": {
+            "role_consistency": "100%",
+            "human_errors": "eliminated",
+            "deployment_time": "reduced"
+        }
+    },
+    {
+        "type": "results",
+        "terminal": "metrics.zsh",
+        "prompt": "iam --measure-success",
+        "title": "Results Achieved",
+        "subtitle": "Measurable Impact",
+        "help": "The results spoke for themselves. By reviewing and right-sizing our policies, we cut excessive permissions by seventy percent. Every user action was traceable, and we hit one hundred percent audit compliance. Developers needed fewer access requests thanks to self-service, and incident investigations became much faster. These improvements showed that strong IAM isn't just about security—it also boosts productivity and efficiency across the board.",
+        "bullets": [
+            "70% reduction in excessive permissions",
+            "100% audit compliance",
+            "80% fewer access requests through self-service",
+            "50% faster incident investigation"
+        ],
+        "code": {
+            "lang": "bash",
+            "content": "# Success metrics\necho \"Excessive permissions: -70%\"\necho \"Audit compliance: 100%\"\necho \"Access requests: -80%\"\necho \"Incident response: +50% faster\"\necho \"Status: MISSION ACCOMPLISHED\""
+        },
+        "status": {
+            "left": [
+                { "icon": "📈", "text": "improved" },
+                { "icon": "✅", "text": "compliant" },
+                { "icon": "🎯", "text": "success" }
+            ],
+            "right": "Success"
+        },
+        "metrics": {
+            "permission_reduction": "70%",
+            "compliance_rate": "100%",
+            "self_service_adoption": "80%",
+            "investigation_speed": "+50%"
+        }
+    },
+    {
+        "type": "future",
+        "terminal": "vision.zsh",
+        "prompt": "iam --future-state",
+        "title": "What We'd Do Better",
+        "subtitle": "Future Vision",
+        "help": "Looking back, there are things we would do differently. We would have pushed harder for AWS SSO, even with PCI concerns, to get better traceability. Automated Terraform pipelines would have replaced manual management, and we would have removed developer write access to AWS accounts entirely. If we started today, we'd build an application-centric identity platform, automate role lifecycles, and move to just-in-time access with automatic expiration. The future is about shifting from people managing permissions to applications requesting them automatically.",
+        "bullets": [
+            "<span class=\"secondary-highlight\">Missed</span>: AWS SSO instead of IAM Users (better traceability)",
+            "<span class=\"secondary-highlight\">Missed</span>: Automated Terraform pipelines vs. manual",
+            "<span class=\"secondary-highlight\">Missed</span>: Remove developer write access entirely",
+            "<span class=\"highlight\">Future</span>: Application-centric identity platform with automated lifecycle"
+        ],
+        "code": {
+            "lang": "bash",
+            "content": "# Future state architecture\necho \"Application requests role\"\necho \"Platform auto-creates with minimal permissions\" \necho \"Just-in-time access granted\"\necho \"Automatic expiration enforced\"\necho \"Zero console access needed\""
+        },
+        "status": {
+            "left": [
+                { "icon": "🔮", "text": "vision" },
+                { "icon": "🤖", "text": "automated" },
+                { "icon": "🚀", "text": "next-gen" }
+            ],
+            "right": "Future"
+        },
+        "metrics": {
+            "automation_level": "complete",
+            "human_intervention": "minimal",
+            "security_posture": "optimal"
+        }
+    },
+    {
         "type": "conclusion",
         "terminal": "conclusion.zsh",
         "prompt": "presentation --summary",
         "title": "Thank You!",
-        "help": "This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.This is the conclusion slide where we wrap up the presentation. Feel free to reach out for collaboration opportunities or to discuss IAM policy implementation strategies.",
+        "help": "Thank you for joining me on this journey through IAM at scale. I hope these lessons and experiences help you build stronger, safer systems in your own organizations. If you have questions or want to connect, I'd love to continue the conversation.",
         "bullets": [
             "Questions & Discussion",
             "Contact: <span class=\"highlight\">cohandv@gmail.com</span>",
@@ -35,7 +286,7 @@
         ],
         "code": {
             "lang": "bash",
-            "content": "# Let's connect and collaborate\ngit clone https://github.com/cohandv/ambientpresentation\ncd ambientpresentation && npm install\nnpm start # Let's build something awesome!"
+            "content": "# Let's connect and collaborate\ngit clone https://github.com/cohandv/iam-deck-101\ncd iam-deck-101 && npm install\nnpm start # Let's build something awesome!"
         },
         "status": {
             "left": [
@@ -44,91 +295,6 @@
                 { "icon": "🎯", "text": "success" }
             ],
             "right": "Complete"
-        }
-    },
-    {
-        "type": "content",
-        "terminal": "overview.zsh",
-        "prompt": "cat iam-overview.md",
-        "title": "IAM Policy Challenges 3",
-        "help": "This slide highlights the common challenges in IAM policy management: over-privileged access being the default, manual policy creation being unscalable, and the need for comprehensive audit trails. The example shows a typical overly permissive policy that grants full access.",
-        "bullets": [
-            "Over-privileged access is the <span class=\"highlight\">norm</span>",
-            "Manual policy creation doesn't <span class=\"secondary-highlight\">scale</span>",
-            "Compliance requires <span class=\"accent\">audit trails</span>"
-        ],
-        "code": {
-            "lang": "json",
-            "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": \"*\",\n    \"Resource\": \"*\"\n  }]\n}"
-        },
-        "status": {
-            "left": [
-                { "icon": "⚡", "text": "powerlevel10k" },
-                { "icon": "📄", "text": "overview.md" },
-                { "icon": "⚠️", "text": "over-privileged" }
-            ],
-            "right": "Problem"
-        }
-    },
-    {
-        "type": "demo",
-        "terminal": "solution.zsh",
-        "prompt": "./analyze-permissions.sh",
-        "title": "Automated Policy Generation",
-        "help": "This slide demonstrates our automated policy generation solution. The Python code shows how we analyze CloudTrail logs to determine actual resource usage and generate minimal required permissions. The system tracks user actions over 30 days to build accurate policy recommendations.",
-        "bullets": [
-            "CloudTrail analysis for actual usage",
-            "Automated policy recommendations",
-            "Continuous compliance monitoring"
-        ],
-        "code": {
-            "lang": "python",
-            "content": "# Policy analyzer\ndef analyze_cloudtrail_logs(user_arn):\n    events = get_user_events(user_arn, days=30)\n    actions = extract_actions(events)\n    return generate_minimal_policy(actions)\n\npolicy = analyze_cloudtrail_logs(\"arn:aws:iam::123:user/dev\")\nprint(json.dumps(policy, indent=2))"
-        },
-        "status": {
-            "left": [
-                { "icon": "⚡", "text": "powerlevel10k" },
-                { "icon": "🔧", "text": "analyzer.py" },
-                { "icon": "🚀", "text": "running" }
-            ],
-            "right": "Solution"
-        }
-    },
-    {
-        "type": "content",
-        "terminal": "architecture.zsh",
-        "prompt": "cat architecture.md",
-        "title": "System Architecture",
-        "help": "This slide outlines the system architecture for our IAM policy management solution. It shows how we process events, track permissions in real-time, and generate compliance reports. The architecture is designed to be scalable and maintainable.",
-        "bullets": [
-            "Event-driven policy analysis",
-            "Real-time permission tracking",
-            "Automated compliance reporting"
-        ],
-        "image": "https://via.placeholder.com/600x400/2d3748/4fd1c7?text=IAM+Policy+Pipeline",
-        "status": {
-            "left": [
-                { "icon": "⚡", "text": "powerlevel10k" },
-                { "icon": "🏗️", "text": "architecture.md" },
-                { "icon": "📊", "text": "pipeline" }
-            ],
-            "right": "Architecture"
-        }
-    },
-    {
-        "type": "content",
-        "terminal": "results.zsh",
-        "prompt": "cat results.md",
-        "title": "Implementation Results",
-        "help": "This slide presents the concrete results of implementing our automated IAM policy solution. The metrics show significant improvements in security posture, including reduced over-privileged access, faster policy deployment, and improved compliance rates.",
-        "text": "After implementing automated least-privilege IAM policies across our infrastructure, we achieved significant improvements in security posture.\n\nKey metrics include 85% reduction in over-privileged access, 60% faster policy deployment, and 100% compliance audit success rate.\n\nThe system now automatically analyzes CloudTrail logs, generates minimal policies, and provides continuous monitoring for policy drift.",
-        "status": {
-            "left": [
-                { "icon": "⚡", "text": "powerlevel10k" },
-                { "icon": "📈", "text": "results.md" },
-                { "icon": "✅", "text": "success" }
-            ],
-            "right": "Results"
         }
     }
 ]

@@ -24,9 +24,9 @@
         .presentation-container {
             width: 100vw;
             height: 100vh;
-            position: relative;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .header {
@@ -34,7 +34,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 80px;
+            height: 44px;
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
             z-index: 1000;
             display: flex;
@@ -54,14 +54,24 @@
             border-top: 2px solid #4a5568;
         }
 
+        #slides-container {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 44px;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
         .slide {
-            position: absolute;
-            top: 80px;
-            bottom: 60px;
-            left: 0;
-            right: 0;
+            position: relative;
+            width: 100%;
+            flex: 1 0 auto;
             display: none;
-            padding: 40px;
+            padding: 40px 0;
             justify-content: center;
             align-items: center;
             overflow: hidden;
@@ -72,9 +82,9 @@
         }
 
         .terminal-window {
-            width: 85%;
+            width: 90vw;
             max-width: 1200px;
-            height: 85%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             background: transparent;
@@ -116,10 +126,12 @@
             background: #1a202c;
             flex: 1;
             padding: 30px;
-            border-radius: 0 0 8px 8px;
+            border-radius: 0 0 12px 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             position: relative;
-            overflow: hidden;
+            overflow: auto;
+            min-height: 400px;
+            max-height: 100%;
         }
 
         .terminal-body::before {
@@ -347,10 +359,12 @@
             border-radius: 12px;
             border: 2.5px solid #4fd1c7;
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            min-width: 400px;
-            min-height: 180px;
-            max-width: 700px;
-            max-height: 70vh;
+            min-width: 600px;
+            min-height: 400px;
+            max-width: 98vw;
+            max-height: calc(100vh - 44px - 60px - 24px); /* header + footer + gap */
+            width: 98vw;
+            height: auto;
             overflow-y: auto;
             z-index: 2000;
             display: none;
@@ -504,12 +518,12 @@
                             <div class="text-content">
                                 ${data.type === 'title' ?
                                     `<h1 class="typing-animation">${data.title}</h1>
-                                     ${data.code ? `<div class="code-block" data-lang="${data.code.lang}">${data.code.content}</div>` : `<div class="code-block" data-lang="info">Author: ${data.author}\nDate: ${dateStr}\nVersion: ${data.version || '1.0.0'}\nTheme: powerlevel10k-inspired</div>`}`
+                                     ${data.code ? `<div class="code-block" data-lang="${data.code.lang}"><pre><code>${data.code.content}</code></pre></div>` : `<div class="code-block" data-lang="info">Author: ${data.author}<br>Date: ${dateStr}<br>Version: ${data.version || '1.0.0'}<br>Theme: powerlevel10k-inspired</div>`}`
                                     : `<h2>${data.title}</h2>`
                                 }
                                 ${data.bullets ? data.bullets.map(bullet => `<div class="bullet-point">${bullet}</div>`).join('') : ''}
                                 ${data.text ? `<div class="text-content">${data.text.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}</div>` : ''}
-                                ${data.code && data.type !== 'title' ? `<div class="code-block" data-lang="${data.code.lang}">${data.code.content}</div>` : ''}
+                                ${data.code && data.type !== 'title' ? `<div class="code-block" data-lang="${data.code.lang}"><pre><code>${data.code.content}</code></pre></div>` : ''}
                             </div>
                             ${hasImage ? `<div class="image-content"><img src="${data.image}" alt="Slide image" class="slide-image"></div>` : ''}
                         </div>
@@ -535,12 +549,8 @@
             const container = document.getElementById('slides-container');
             container.innerHTML = ''; // Clear existing slides
 
-            // Always keep slides 1 and 2, then add dynamic slides
-            const orderedSlides = [
-                slideData[0], // Title slide
-                ...slideData.slice(2), // Dynamic slides
-                slideData[1]  // Conclusion slide
-            ];
+            // Render all slides in order
+            const orderedSlides = slideData;
 
             totalSlides = orderedSlides.length;
             document.getElementById('total-slides').textContent = totalSlides;
@@ -564,29 +574,38 @@
         });
 
         function showSlide(n) {
+            console.log('showSlide called with n:', n, 'currentSlide before:', currentSlide);
             const slides = document.querySelectorAll('.slide');
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (n + totalSlides) % totalSlides;
+            // Clamp n to valid range
+            if (n < 0) n = 0;
+            if (n >= totalSlides) n = totalSlides - 1;
+            // Remove .active from all slides
+            slides.forEach(slide => slide.classList.remove('active'));
+            // Set currentSlide and activate the correct slide
+            currentSlide = n;
             slides[currentSlide].classList.add('active');
             document.getElementById('current-slide').textContent = currentSlide + 1;
+            console.log('showSlide set currentSlide to:', currentSlide);
         }
 
         function nextSlide() {
+            console.log('nextSlide called, currentSlide:', currentSlide);
             showSlide(currentSlide + 1);
         }
 
         function previousSlide() {
+            console.log('previousSlide called, currentSlide:', currentSlide);
             showSlide(currentSlide - 1);
         }
 
         // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === ' ') {
-                nextSlide();
-            } else if (e.key === 'ArrowLeft') {
-                previousSlide();
-            }
-        });
+        // document.addEventListener('keydown', (e) => {
+        //     if (e.key === 'ArrowRight' || e.key === ' ') {
+        //         nextSlide();
+        //     } else if (e.key === 'ArrowLeft') {
+        //         previousSlide();
+        //     }
+        // });
 
         // Initialize presentation
         // initializePresentation(); // Removed - now called from loadSlides()
