@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "build:pages": "mkdir -p docs && cp index.html slides.json docs/"
   },
   "keywords": [
     "presentation",
