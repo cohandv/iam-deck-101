@@ -4,10 +4,9 @@
         "terminal": "presentation.zsh",
         "prompt": "presentation --title",
         "title": "Designing least-privilege IAM policies at scale",
-        "subtitle": "Modern Terminal-Inspired Design",
         "author": "David Cohan",
         "version": "1.0.0",
-        "help": "Today, I want to share how we tackled the challenge of designing least-privilege IAM policies at scale. This journey is about more than just security—it's about building systems that grow with your organization, while keeping things safe and manageable. Let's explore the patterns, the automation, and the lessons we learned along the way.",
+        "help": "<h1>Introduction</h1><p>Let me start by introducing myself and what was my role along the way in the implementation of <strong>least-privilege IAM policies</strong> at scale.</p><p>This project relates to my previous work at a <em>large beauty company</em>. When I joined, the company was already up and running. The company grew fast and faced several challenges:</p><ul><li>Engineering team grew fast and introduced different seniority levels</li><li>Compliance requirements - we already were PCI compliant, but we handled some of the requirements in a simple way</li><li>Need to ensure minimal permissions were set</li></ul><p>During this presentation I will guide you through some of the steps taken to improve this and minimize any escalation.</p>",
         "bullets": [
             "Scalable IAM policy design patterns",
             "Automated <span class=\"highlight\">least-privilege</span> enforcement",
@@ -28,13 +27,13 @@
         "prompt": "iam --scale --enterprise",
         "title": "The Starting Point",
         "subtitle": "What We Inherited",
-        "help": "When we began, our environment was a patchwork of over a hundred engineers, spread across a dozen teams, each with broad access to more than fifty AWS accounts. There was no central control, and admin privileges were handed out just to keep things moving. Audit trails were missing, credentials were often shared, and a looming PCI DSS deadline forced us to rethink everything about how we managed identity and access.",
+        "help": "<h1>Problem</h1><p>Teams were growing and there were multiple legacy IAM users and roles, there was no standard, no real idea of who owned which principal. With multiple AWS accounts made it difficult to trace issues and excess of permissions. There were multiple users with access to PCI and little control of active users. There was some automation in place with some CloudFormation and Terraform, but many accounts were left heterogeneous.</p>",
         "bullets": [
             "100+ Engineers across 10-12 teams with broad permissions",
-            "50+ AWS accounts with no centralized governance",
+            "50+ AWS accounts some on same AWS Organization while others dont with heterogeneous patterns",
             "Admin-level access everywhere for operational speed",
             "No audit trail, shared credentials",
-            "PCI DSS compliance deadline approaching"
+            "PCI DSS compliance with some mocked up data"
         ],
         "code": {
             "lang": "bash",
@@ -44,15 +43,9 @@
             "left": [
                 { "icon": "⚠️", "text": "100+ engineers" },
                 { "icon": "🔥", "text": "security debt" },
-                { "icon": "📋", "text": "PCI deadline" }
+                { "icon": "📋", "text": "PCI requirements" }
             ],
             "right": "Problem"
-        },
-        "metrics": {
-            "accounts": "50+",
-            "engineers": "100+",
-            "teams": "10-12",
-            "compliance_status": "non-compliant"
         }
     },
     {
@@ -61,12 +54,13 @@
         "prompt": "aws organizations --setup",
         "title": "AWS Organizations Foundation",
         "subtitle": "Centralized Governance",
-        "help": "Our first step was to bring order to the chaos. We used AWS Organizations to create a solid foundation, setting up a master account for centralized billing and control. We organized our environments so each one had both shared services and dedicated business unit accounts. CloudTrail was enabled everywhere, giving us the audit logs we desperately needed. And by managing everything with Terraform, we ensured that our security baselines were consistent and reliable across the board.",
+        "help": "<h2>Top to Bottom, organize organization</h2><ul><li>A centralized Terraform code in charge of setup base roles and policies and so other shared resources</li><li>All roles to be assumed were created here, all the same shape</li><li>Created IAM roles for 3rd party services using external ids whenever it was possible</li><li>A new requirement on a policy was relatively easy to share across accounts</li><li>Roles had a trusting over an SSO provider we had (Okta was the last one, can't remember what was the original when I joined)</li><li>Roles inter-account for shared services were also created here (like Puppet IAM Roles)</li><li>Configured CloudTrail at billing account (can't remember how it was done but was part of the landing on each account)</li><li>Re-landed all of our accounts including production</li><li>Dried out old IAM users and roles (shared ones)</li></ul>",
+        "image": "images/iam_orgs.png",
         "bullets": [
-            "Master account with centralized billing",
-            "Environment structure: shared services + business unit accounts",
+            "Master account with AWS Organizations organized by OU",
+            "Accounts structure and responsibility: shared services + business unit accounts",
             "CloudTrail enabled across all accounts",
-            "Terraform-managed provisioning and baselines"
+            "Terraform-managed provisioning and landing setup"
         ],
         "code": {
             "lang": "hcl",
@@ -79,11 +73,6 @@
                 { "icon": "🔧", "text": "terraform" }
             ],
             "right": "Built"
-        },
-        "metrics": {
-            "management_overhead": "reduced",
-            "audit_coverage": "100%",
-            "baseline_compliance": "enforced"
         }
     },
     {
@@ -92,7 +81,7 @@
         "prompt": "aws organizations --scp",
         "title": "Service Control Policies",
         "subtitle": "Organization-Level Guardrails",
-        "help": "To keep our organization safe, we put guardrails in place using Service Control Policies. These policies acted as a safety net, blocking risky actions before they could happen. We set up restrictions that were tighter in production, and made sure that accidental resource deletions were prevented. With these controls, we blocked access to unwanted AWS regions and high-risk services, and we saw a real drop in security incidents almost immediately.",
+        "help": "<h2>Enabling SCP at a glance</h2><ul><li>We could easily create restrictions such as which regions we wanted to enable/disable</li><li>What services were enabled/disabled</li><li>Prevent destruction of unwanted resources such as databases, caches, etc</li><li>While on the other hand we found pretty hard trial and error to scope down what permiss",
         "bullets": [
             "Preventive controls blocking dangerous actions",
             "Environment-specific restrictions",
@@ -103,7 +92,7 @@
             "lang": "json",
             "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Deny\",\n    \"Action\": [\"ec2:TerminateInstances\"],\n    \"Resource\": \"*\",\n    \"Condition\": {\n      \"StringNotEquals\": {\n        \"aws:PrincipalTag/Environment\": \"Production\"\n      }\n    }\n  }]\n}"
         },
-        "image": "iam_evaulation.png",
+        "image": "images/iam_evaluation.png",
         "status": {
             "left": [
                 { "icon": "🛡️", "text": "preventive" },
@@ -111,11 +100,31 @@
                 { "icon": "✅", "text": "effective" }
             ],
             "right": "Protected"
+        }
+    },
+    {
+        "type": "boundaries",
+        "terminal": "boundaries.zsh",
+        "prompt": "iam --permission-boundaries",
+        "title": "Permission Boundaries",
+        "subtitle": "Safety Net Implementation",
+        "help": "<h2>Setting up a second guardrails for escalations</h2><p>Implementing an extensive permission boundary allowed us to let developers work more independently, but always within secure guardrails avoiding unwanted escalations.</p>",
+        "bullets": [
+            "Maximum permission limits regardless of policies",
+            "Developer self-service within guardrails",
+            "Standard boundary: allow EC2/S3/Lambda, deny IAM/Orgs"
+        ],
+        "code": {
+            "lang": "json",
+            "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": [\"ec2:*\", \"s3:*\", \"lambda:*\"],\n    \"Resource\": \"*\"\n  }, {\n    \"Effect\": \"Deny\", \n    \"Action\": [\"iam:*\", \"organizations:*\"],\n    \"Resource\": \"*\"\n  }]\n}"
         },
-        "metrics": {
-            "incidents_prevented": "multiple",
-            "regions_blocked": "non-approved",
-            "production_safety": "enforced"
+        "status": {
+            "left": [
+                { "icon": "🛡️", "text": "boundaries" },
+                { "icon": "🔒", "text": "secure" },
+                { "icon": "✨", "text": "zero incidents" }
+            ],
+            "right": "Secured"
         }
     },
     {
@@ -124,11 +133,10 @@
         "prompt": "iam --pci-compliance",
         "title": "IAM Users - PCI Reality",
         "subtitle": "Compliance Requirements",
-        "help": "PCI DSS compliance changed the way we managed users. We had to create individual accounts for every engineer, enforce MFA everywhere, and rotate access keys every ninety days. CloudTrail gave us the audit trails we needed, but it also meant managing credentials became more complex. It wasn't the most modern approach, but it was the trade-off we had to make to meet our compliance goals.",
+        "help": "<h2>Meet PCI DSS requirements</h2><ul><li>We enabled 90 day key rotation with IAM users provided by Terraform</li><li>No shared accounts</li><li>MFA was mandatory</li><li>We found some issues trying to use MFA with the 2nd factor auth, we came up with a combination of permissions in which we allowed actions to validate MFA codes without 2FA and ensure all other actions were protected (don't recall the details)</li><li>All in all, it was decent controls since a small portion of the whole engineering team was allowed to enter PCI accounts, but manually provided</li></ul>",
         "bullets": [
             "Individual named accounts (firstname.lastname)",
             "MFA enforcement + 90-day key rotation",
-            "Complete audit trail via CloudTrail",
             "<span class=\"secondary-highlight\">Trade-off</span>: Complex credential management vs. compliance"
         ],
         "code": {
@@ -142,42 +150,6 @@
                 { "icon": "📋", "text": "PCI compliant" }
             ],
             "right": "Compliant"
-        },
-        "metrics": {
-            "audit_trail": "complete",
-            "mfa_coverage": "100%",
-            "rotation_cycle": "90 days"
-        }
-    },
-    {
-        "type": "boundaries",
-        "terminal": "boundaries.zsh",
-        "prompt": "iam --permission-boundaries",
-        "title": "Permission Boundaries",
-        "subtitle": "Safety Net Implementation",
-        "help": "Permission boundaries became our ultimate safety net. They defined the maximum permissions anyone could have, no matter what other policies were attached. This let developers work more independently, but always within secure guardrails. We set standard boundaries that allowed common services like EC2, S3, and Lambda, but blocked access to IAM and Organizations management. After this change, we didn't have a single privilege escalation incident, and developers had the freedom they needed without sacrificing security.",
-        "bullets": [
-            "Maximum permission limits regardless of policies",
-            "Developer self-service within guardrails",
-            "Standard boundary: allow EC2/S3/Lambda, deny IAM/Orgs",
-            "<span class=\"highlight\">Result</span>: Zero privilege escalation incidents"
-        ],
-        "code": {
-            "lang": "json",
-            "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Action\": [\"ec2:*\", \"s3:*\", \"lambda:*\"],\n    \"Resource\": \"*\"\n  }, {\n    \"Effect\": \"Deny\", \n    \"Action\": [\"iam:*\", \"organizations:*\"],\n    \"Resource\": \"*\"\n  }]\n}"
-        },
-        "status": {
-            "left": [
-                { "icon": "🛡️", "text": "boundaries" },
-                { "icon": "🔒", "text": "secure" },
-                { "icon": "✨", "text": "zero incidents" }
-            ],
-            "right": "Secured"
-        },
-        "metrics": {
-            "escalation_incidents": "0",
-            "self_service_adoption": "high",
-            "boundary_violations": "0"
         }
     },
     {
@@ -186,7 +158,7 @@
         "prompt": "terraform --iam-scale",
         "title": "Terraform at Scale",
         "subtitle": "Infrastructure as Code",
-        "help": "Terraform was the key to scaling our IAM management. We built standardized role modules for common patterns like EC2, Lambda, and EKS. Permission boundaries were applied automatically, and every change was version-controlled and reviewed. Trust relationships were consistent, and human error was virtually eliminated. This infrastructure-as-code approach gave us the consistency and auditability we needed to manage IAM at scale.",
+        "help": "As the infrastructure lead, I chose Terraform as the key to scaling our IAM management. I personally designed standardized role modules for common patterns like EC2, Lambda, and EKS. I implemented automatic permission boundary application, and established a version-controlled review process. I ensured trust relationships were consistent, and virtually eliminated human error. This infrastructure-as-code approach was my chosen solution to give us the consistency and auditability we needed to manage IAM at scale.",
         "bullets": [
             "Standardized role modules (EC2, Lambda, EKS)",
             "Automatic permission boundary application",
@@ -204,11 +176,6 @@
                 { "icon": "📝", "text": "version controlled" }
             ],
             "right": "Scaled"
-        },
-        "metrics": {
-            "role_consistency": "100%",
-            "human_errors": "eliminated",
-            "deployment_time": "reduced"
         }
     },
     {
@@ -217,7 +184,7 @@
         "prompt": "iam --measure-success",
         "title": "Results Achieved",
         "subtitle": "Measurable Impact",
-        "help": "The results spoke for themselves. By reviewing and right-sizing our policies, we cut excessive permissions by seventy percent. Every user action was traceable, and we hit one hundred percent audit compliance. Developers needed fewer access requests thanks to self-service, and incident investigations became much faster. These improvements showed that strong IAM isn't just about security—it also boosts productivity and efficiency across the board.",
+        "help": "The results of my leadership and decisions spoke for themselves. By reviewing and right-sizing our policies, I led the team to cut excessive permissions by seventy percent. I ensured every user action was traceable, and we hit one hundred percent audit compliance. Through my self-service implementation, developers needed fewer access requests, and I streamlined incident investigations to be much faster. These improvements showed that my approach to strong IAM wasn't just about security—it also boosted productivity and efficiency across the board.",
         "bullets": [
             "70% reduction in excessive permissions",
             "100% audit compliance",
@@ -235,12 +202,6 @@
                 { "icon": "🎯", "text": "success" }
             ],
             "right": "Success"
-        },
-        "metrics": {
-            "permission_reduction": "70%",
-            "compliance_rate": "100%",
-            "self_service_adoption": "80%",
-            "investigation_speed": "+50%"
         }
     },
     {
@@ -249,7 +210,7 @@
         "prompt": "iam --future-state",
         "title": "What We'd Do Better",
         "subtitle": "Future Vision",
-        "help": "Looking back, there are things we would do differently. We would have pushed harder for AWS SSO, even with PCI concerns, to get better traceability. Automated Terraform pipelines would have replaced manual management, and we would have removed developer write access to AWS accounts entirely. If we started today, we'd build an application-centric identity platform, automate role lifecycles, and move to just-in-time access with automatic expiration. The future is about shifting from people managing permissions to applications requesting them automatically.",
+        "help": "Looking back at my leadership, there are things I would do differently. I would have pushed harder for AWS SSO, even with PCI concerns, to get better traceability. I would have implemented automated Terraform pipelines to replace manual management, and I would have removed developer write access to AWS accounts entirely. If I were to start today, I would build an application-centric identity platform, automate role lifecycles, and move to just-in-time access with automatic expiration. My vision for the future is about shifting from people managing permissions to applications requesting them automatically.",
         "bullets": [
             "<span class=\"secondary-highlight\">Missed</span>: AWS SSO instead of IAM Users (better traceability)",
             "<span class=\"secondary-highlight\">Missed</span>: Automated Terraform pipelines vs. manual",
@@ -267,11 +228,6 @@
                 { "icon": "🚀", "text": "next-gen" }
             ],
             "right": "Future"
-        },
-        "metrics": {
-            "automation_level": "complete",
-            "human_intervention": "minimal",
-            "security_posture": "optimal"
         }
     },
     {
@@ -279,7 +235,7 @@
         "terminal": "conclusion.zsh",
         "prompt": "presentation --summary",
         "title": "Thank You!",
-        "help": "Thank you for joining me on this journey through IAM at scale. I hope these lessons and experiences help you build stronger, safer systems in your own organizations. If you have questions or want to connect, I'd love to continue the conversation.",
+        "help": "As the lead architect and presenter, I want to thank you for joining me on this journey through IAM at scale. I hope the lessons and experiences I've shared help you build stronger, safer systems in your own organizations. If you have questions about my approach or want to connect, I'd love to continue the conversation.",
         "bullets": [
             "Questions & Discussion",
             "Contact: <span class=\"highlight\">cohandv@gmail.com</span>",

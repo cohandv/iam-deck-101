@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build:pages": "mkdir -p docs && cp *.png index.html slides.json docs/"
+    "build:pages": "mkdir -p docs/images && cp *.png docs/images/ && cp index.html slides.json docs/"
   },
   "keywords": [
     "presentation",

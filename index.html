@@ -436,6 +436,14 @@
             max-width: 90vw;
             max-height: 80vh;
         }
+
+        .subtitle {
+            color: #8be9fd;
+            font-size: 1.2em;
+            margin: 0.5em 0 1em 0;
+            font-weight: normal;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -553,8 +561,10 @@
                             <div class="text-content">
                                 ${data.type === 'title' ?
                                     `<h1 class="typing-animation">${data.title}</h1>
+                                     ${data.subtitle ? `<h2 class="subtitle">${data.subtitle}</h2>` : ''}
                                      ${data.code ? `<div class="code-block" data-lang="${data.code.lang}"><pre><code>${data.code.content}</code></pre></div>` : `<div class="code-block" data-lang="info">Author: ${data.author}<br>Date: ${dateStr}<br>Version: ${data.version || '1.0.0'}<br>Theme: powerlevel10k-inspired</div>`}`
-                                    : `<h2>${data.title}</h2>`
+                                    : `<h2>${data.title}</h2>
+                                       ${data.subtitle ? `<h3 class="subtitle">${data.subtitle}</h3>` : ''}`
                                 }
                                 ${data.bullets ? data.bullets.map(bullet => `<div class="bullet-point">${bullet}</div>`).join('') : ''}
                                 ${data.text ? `<div class="text-content">${data.text.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}</div>` : ''}
@@ -584,10 +594,17 @@
                 container.appendChild(slide);
             });
 
-            // Reset to first slide if current slide is out of bounds
-            if (currentSlide >= totalSlides) {
+            // Check URL for slide number
+            const urlParams = new URLSearchParams(window.location.search);
+            const slideNum = parseInt(urlParams.get('slide')) - 1;
+
+            // Only reset to first slide if no valid slide number in URL
+            if (isNaN(slideNum) || slideNum < 0 || slideNum >= totalSlides) {
                 currentSlide = 0;
+            } else {
+                currentSlide = slideNum;
             }
+
             showSlide(currentSlide);
         }
 
@@ -611,8 +628,21 @@
             document.getElementById('current-slide').textContent = currentSlide + 1;
             addSlideImageHelpListeners();
             updateFooterStatusBar();
+            // Update URL with current slide number
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('slide', currentSlide + 1);
+            window.history.pushState({ slide: currentSlide }, '', newUrl);
             console.log('showSlide set currentSlide to:', currentSlide);
         }
+
+        // Handle browser back/forward navigation
+        window.addEventListener('popstate', (event) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const slideNum = parseInt(urlParams.get('slide')) - 1;
+            if (!isNaN(slideNum) && slideNum >= 0 && slideNum < totalSlides) {
+                showSlide(slideNum);
+            }
+        });
 
         function nextSlide() {
             showSlide(currentSlide + 1);
