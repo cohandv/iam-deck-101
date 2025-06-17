@@ -426,7 +426,10 @@
         // Load slides from JSON file
         async function loadSlides() {
             try {
-                const response = await fetch('/api/slides');
+                // Use slides.json on GitHub Pages/static, /api/slides on local server
+                const isStatic = location.hostname.endsWith('github.io') || location.protocol === 'file:';
+                const slidesUrl = isStatic ? 'slides.json' : '/api/slides';
+                const response = await fetch(slidesUrl);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
