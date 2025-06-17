@@ -103,6 +103,7 @@
             "lang": "json",
             "content": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Deny\",\n    \"Action\": [\"ec2:TerminateInstances\"],\n    \"Resource\": \"*\",\n    \"Condition\": {\n      \"StringNotEquals\": {\n        \"aws:PrincipalTag/Environment\": \"Production\"\n      }\n    }\n  }]\n}"
         },
+        "image": "iam_evaulation.png",
         "status": {
             "left": [
                 { "icon": "🛡️", "text": "preventive" },

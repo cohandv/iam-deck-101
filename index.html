@@ -85,6 +85,7 @@
             width: 90vw;
             max-width: 1200px;
             height: 100%;
+            max-height: 100%;
             display: flex;
             flex-direction: column;
             background: transparent;
@@ -124,14 +125,13 @@
 
         .terminal-body {
             background: #1a202c;
-            flex: 1;
+            flex: 1 1 auto;
             padding: 30px;
             border-radius: 0 0 12px 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             position: relative;
-            overflow: auto;
-            min-height: 400px;
-            max-height: 100%;
+            overflow-y: auto;
+            min-height: 0;
         }
 
         .terminal-body::before {
@@ -239,16 +239,15 @@
         }
 
         .status-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
             background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
             padding: 8px 20px;
             font-size: 11px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-height: 32px;
+            opacity: 0.85;
+            flex-shrink: 0;
         }
 
         .status-left {
@@ -374,7 +373,9 @@
         }
 
         .help-dialog.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .help-label {
@@ -404,6 +405,18 @@
         .help-overlay.active {
             display: block;
         }
+
+        .help-content {
+            width: 100%;
+            max-width: none;
+            flex: 1 1 auto;
+            overflow-y: auto;
+            text-align: left;
+            box-sizing: border-box;
+            padding: 0 32px 16px 32px;
+            font-size: 1.15rem;
+            line-height: 1.7;
+        }
     </style>
 </head>
 <body>
@@ -424,6 +437,10 @@
         <div id="slides-container"></div>
 
         <div class="footer">
+            <div class="status-bar" id="footer-status-bar">
+                <div class="status-left"></div>
+                <div class="status-right"></div>
+            </div>
             <div class="navigation">
                 <button class="nav-btn" onclick="previousSlide()">← Prev</button>
                 <button class="nav-btn" onclick="nextSlide()">Next →</button>
@@ -497,8 +514,6 @@
             if (index === 0) slide.classList.add('active');
 
             const hasImage = data.image;
-
-            // Add date to title slide if it's missing
             const dateStr = data.date || new Date().toISOString().split('T')[0];
 
             slide.innerHTML = `
@@ -527,17 +542,6 @@
                             </div>
                             ${hasImage ? `<div class="image-content"><img src="${data.image}" alt="Slide image" class="slide-image"></div>` : ''}
                         </div>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-left">
-                            ${data.status.left.map(item => `
-                                <div class="status-item">
-                                    <span class="status-icon">${item.icon}</span>
-                                    <span>${item.text}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div>${data.status.right}</div>
                     </div>
                 </div>
             `;
@@ -589,12 +593,10 @@
         }
 
         function nextSlide() {
-            console.log('nextSlide called, currentSlide:', currentSlide);
             showSlide(currentSlide + 1);
         }
 
         function previousSlide() {
-            console.log('previousSlide called, currentSlide:', currentSlide);
             showSlide(currentSlide - 1);
         }
 
@@ -606,9 +608,6 @@
         //         previousSlide();
         //     }
         // });
-
-        // Initialize presentation
-        // initializePresentation(); // Removed - now called from loadSlides()
 
         // Auto-start typing animation
         setTimeout(() => {
@@ -625,7 +624,8 @@
         const helpContent = document.querySelector('.help-content');
 
         function updateHelpDialog() {
-            helpContent.innerHTML = (slideData[currentSlide] && slideData[currentSlide].help) ? slideData[currentSlide].help : 'No help text available for this slide.';
+            const slide = slideData[currentSlide];
+            helpContent.innerHTML = (slide && slide.help) ? slide.help : 'No help text available for this slide.';
         }
 
         function toggleHelp(forceState) {
@@ -665,11 +665,21 @@
             }
         });
 
-        // Update help dialog on slide change
-        const originalShowSlide = showSlide;
-        showSlide = function(n) {
-            originalShowSlide(n);
-            if (helpVisible) updateHelpDialog();
+        function updateFooterStatusBar() {
+            const slide = slideData[currentSlide];
+            const left = (slide.status && slide.status.left && slide.status.left.length)
+                ? slide.status.left.map(item => `
+                    <div class="status-item">
+                        <span class="status-icon">${item.icon}</span>
+                        <span>${item.text}</span>
+                    </div>
+                `).join('')
+                : '<span style="opacity:0.5;">&nbsp;</span>';
+            const right = (slide.status && slide.status.right)
+                ? slide.status.right
+                : '<span style="opacity:0.5;">&nbsp;</span>';
+            document.querySelector('.status-left').innerHTML = left;
+            document.querySelector('.status-right').innerHTML = right;
         }
     </script>
 </body>
