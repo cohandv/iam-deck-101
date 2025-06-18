@@ -158,7 +158,7 @@
         "prompt": "terraform --iam-scale",
         "title": "Terraform at Scale",
         "subtitle": "Infrastructure as Code",
-        "help": "As the infrastructure lead, I chose Terraform as the key to scaling our IAM management. I personally designed standardized role modules for common patterns like EC2, Lambda, and EKS. I implemented automatic permission boundary application, and established a version-controlled review process. I ensured trust relationships were consistent, and virtually eliminated human error. This infrastructure-as-code approach was my chosen solution to give us the consistency and auditability we needed to manage IAM at scale.",
+        "help": "<h2>Terraform as starting point</h2><ul><li>Terraform was the methodology we spread to engineering to create resources</li><li>Modules were created to define common trustings for different kind of services</li><li>Permissions boundary was mandatory in order to allow roles creation</li><li>We created some predefined roles for common services</li><li>It was decently managed, but it was hard to keep up with the least privilege principle, it was partially successful after all</li><li>Terraform was manually applied by senior engineers on each pod</li></ul>",
         "bullets": [
             "Standardized role modules (EC2, Lambda, EKS)",
             "Automatic permission boundary application",
@@ -184,12 +184,12 @@
         "prompt": "iam --measure-success",
         "title": "Results Achieved",
         "subtitle": "Measurable Impact",
-        "help": "The results of my leadership and decisions spoke for themselves. By reviewing and right-sizing our policies, I led the team to cut excessive permissions by seventy percent. I ensured every user action was traceable, and we hit one hundred percent audit compliance. Through my self-service implementation, developers needed fewer access requests, and I streamlined incident investigations to be much faster. These improvements showed that my approach to strong IAM wasn't just about security—it also boosted productivity and efficiency across the board.",
+        "help": "<h2>Results</h2><ul><li>Yes we speeded up and standardized access through accounts, that worked pretty well but there were big gaps during this implementation</li><li>We didn't rely on applications to monitor and automatic detection of threats</li><li>All audit activities were manual and unsuccessful</li><li>Using an IdP we could fully control the lifecycle of services accepting the trade off between strict least privilege principle and standardization and automation across the board</li></ul>",
         "bullets": [
-            "70% reduction in excessive permissions",
-            "100% audit compliance",
-            "80% fewer access requests through self-service",
-            "50% faster incident investigation"
+            "100% reduction in shared roles sprawl (shared, 3rd party, etc)",
+            "100% centralized audit compliance",
+            "30% more self-service conciousness through training",
+            "30% faster incident investigation with IAM (applications incidents, not security incidents)"
         ],
         "code": {
             "lang": "bash",
@@ -210,7 +210,7 @@
         "prompt": "iam --future-state",
         "title": "What We'd Do Better",
         "subtitle": "Future Vision",
-        "help": "Looking back at my leadership, there are things I would do differently. I would have pushed harder for AWS SSO, even with PCI concerns, to get better traceability. I would have implemented automated Terraform pipelines to replace manual management, and I would have removed developer write access to AWS accounts entirely. If I were to start today, I would build an application-centric identity platform, automate role lifecycles, and move to just-in-time access with automatic expiration. My vision for the future is about shifting from people managing permissions to applications requesting them automatically.",
+        "help": "<h2>Conclusion</h2><ul><li>As I ended up architecting projects for the team, one of the most valuable learnings was that the learning curve and the cognitive load for developers to learn basic infrastructure, learn AWS, learn Terraform was just too much, most of the team members didn't learn properly</li><li>There was lots of copy-paste antipattern</li><li>There was lots of requests and doubts on how to use Terraform and AWS</li><li>Restrictions were properly applied, but self service was a failure</li></ul>",
         "bullets": [
             "<span class=\"secondary-highlight\">Missed</span>: AWS SSO instead of IAM Users (better traceability)",
             "<span class=\"secondary-highlight\">Missed</span>: Automated Terraform pipelines vs. manual",
@@ -235,7 +235,6 @@
         "terminal": "conclusion.zsh",
         "prompt": "presentation --summary",
         "title": "Thank You!",
-        "help": "As the lead architect and presenter, I want to thank you for joining me on this journey through IAM at scale. I hope the lessons and experiences I've shared help you build stronger, safer systems in your own organizations. If you have questions about my approach or want to connect, I'd love to continue the conversation.",
         "bullets": [
             "Questions & Discussion",
             "Contact: <span class=\"highlight\">cohandv@gmail.com</span>",
