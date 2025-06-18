@@ -187,12 +187,12 @@
         "prompt": "iam --measure-success",
         "title": "Results Achieved",
         "subtitle": "Measurable Impact",
-        "help": "<h2>Results</h2><ul><li>Yes we speeded up and standardized access through accounts, that worked pretty well but there were big gaps during this implementation</li><li>We didn't rely on applications to monitor and automatic detection of threats</li><li>All audit activities were manual and unsuccessful</li><li>Using an IdP we could fully control the lifecycle of services accepting the trade off between strict least privilege principle and standardization and automation across the board</li> <li>Auditing happened via GitHub pull requests</li></ul>",
+        "help": "<h2>Results</h2><ul><li>Yes we speeded up and standardized access through accounts, that worked pretty well but there were big gaps during this implementation</li><li>We didn't rely on applications to monitor and automatic detection of threats</li><li>All audit activities were manual and unsuccessful</li><li>Using an IdP we could fully control the lifecycle of services accepting the trade off between strict least privilege principle and standardization and automation across the board</li> <li>Auditing happened via GitHub pull requests</li> <li>We noticed a reduction in Jira tickets requesting modules, they started doing themselves</li><li>We measured MTTD on incidents</li>    </ul>",
         "bullets": [
             "100% reduction in shared roles sprawl (shared, 3rd party, etc)",
             "100% centralized access audit trail",
-            "30% more self-service conciousness through training",
-            "30% faster incident investigation with IAM (applications incidents, not security incidents)"
+            "30% more self-service (awareness through continuous training)",
+            "15% faster incident investigation with IAM (applications incidents, not security incidents)"
         ],
         "code": {
             "lang": "bash",
