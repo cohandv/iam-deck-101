@@ -6,7 +6,7 @@
         "title": "Designing least-privilege IAM policies at scale",
         "author": "David Cohan",
         "version": "1.0.0",
-        "help": "<h1>Introduction</h1><p>Let me start by introducing myself and what was my role along the way in the implementation of <strong>least-privilege IAM policies</strong> at scale.</p><p>This project relates to my previous work at a <em>large beauty company</em>. When I joined, the company was already up and running. The company grew fast and faced several challenges:</p><ul><li>Engineering team grew fast and introduced different seniority levels</li><li>Compliance requirements - we already were PCI compliant, but we handled some of the requirements in a simple way</li><li>Need to ensure minimal permissions were set</li></ul><p>During this presentation I will guide you through some of the steps taken to improve this and minimize any escalation.</p>",
+        "help": "<h1>Introduction</h1><p>Let me start by introducing myself and what was my role along the way in the implementation of <strong>least-privilege IAM policies</strong> at scale.</p><p>This project relates to my previous work at a <em>large beauty company</em>. When I joined, the company was already up and running. The company grew fast and faced several challenges:</p><ul><li>Engineering team grew fast and introduced different seniority levels</li><li>Compliance requirements - we already were PCI compliant, but we handled some of the requirements in a simple way</li><li>Need to ensure minimal permissions were set</li></ul><p></br>During this presentation I will guide you through some of the steps taken to improve this and minimize any escalation.</p>",
         "bullets": [
             "Scalable IAM policy design patterns",
             "Automated <span class=\"highlight\">least-privilege</span> enforcement",
@@ -30,10 +30,10 @@
         "help": "<h1>Problem</h1><p>Teams were growing and there were multiple legacy IAM users and roles, there was no standard, no real idea of who owned which principal. With multiple AWS accounts made it difficult to trace issues and excess of permissions. There were multiple users with access to PCI and little control of active users. There was some automation in place with some CloudFormation and Terraform, but many accounts were left heterogeneous.</p>",
         "bullets": [
             "100+ Engineers across 10-12 teams with broad permissions",
-            "50+ AWS accounts some on same AWS Organization while others dont with heterogeneous patterns",
+            "50+ AWS accounts disorganized and with heterogeneous patterns",
             "Admin-level access everywhere for operational speed",
             "No audit trail, shared credentials",
-            "PCI DSS compliance with some mocked up data"
+            "PCI DSS compliance with poor controls"
         ],
         "code": {
             "lang": "bash",
@@ -54,7 +54,7 @@
         "prompt": "aws organizations --setup",
         "title": "AWS Organizations Foundation",
         "subtitle": "Centralized Governance",
-        "help": "<h2>Top to Bottom, organize organization</h2><ul><li>A centralized Terraform code in charge of setup base roles and policies and so other shared resources</li><li>All roles to be assumed were created here, all the same shape</li><li>Created IAM roles for 3rd party services using external ids whenever it was possible</li><li>A new requirement on a policy was relatively easy to share across accounts</li><li>Roles had a trusting over an SSO provider we had (Okta was the last one, can't remember what was the original when I joined)</li><li>Roles inter-account for shared services were also created here (like Puppet IAM Roles)</li><li>Configured CloudTrail at billing account (can't remember how it was done but was part of the landing on each account)</li><li>Re-landed all of our accounts including production</li><li>Dried out old IAM users and roles (shared ones)</li></ul>",
+        "help": "<h2>Top to Bottom, organize accounts under one Organization</h2><ul><li>A centralized Terraform code in charge of setup base roles and policies and so other shared resources</li><li>All roles to be assumed were created here, all the same shape</li><li>Created IAM roles for 3rd party services using external ids whenever it was possible</li><li>A new requirement on a policy was relatively easy to share across accounts</li><li>Roles had a trusting over an SSO provider we had (Okta was the last one, can't remember what was the original when I joined)</li><li>Roles inter-account for shared services were also created here (like Puppet IAM Roles)</li><li>Configured CloudTrail at billing account (can't remember how it was done but was part of the landing on each account)</li><li>Re-landed all of our accounts including production</li><li>Dried out old IAM users and roles (shared ones)</li></ul>",
         "image": "images/iam_orgs.png",
         "bullets": [
             "Master account with AWS Organizations organized by OU",
@@ -79,9 +79,9 @@
         "type": "guardrails",
         "terminal": "scp.zsh",
         "prompt": "aws organizations --scp",
-        "title": "Service Control Policies",
+        "title": "Service and Resource Control Policies",
         "subtitle": "Organization-Level Guardrails",
-        "help": "<h2>Enabling SCP at a glance</h2><ul><li>We could easily create restrictions such as which regions we wanted to enable/disable</li><li>What services were enabled/disabled</li><li>Prevent destruction of unwanted resources such as databases, caches, etc</li><li>While on the other hand we found pretty hard trial and error to scope down what permiss",
+        "help": "<h2>Enabling SCP at a glance</h2><ul><li>We could easily create restrictions such as which regions we wanted to enable/disable</li><li>What services were enabled/disabled</li><li>Prevent destruction of unwanted resources such as databases, caches, etc</li><li>While on the other hand we found pretty hard test and error to scope down what permiss",
         "bullets": [
             "Preventive controls blocking dangerous actions",
             "Environment-specific restrictions",
@@ -136,6 +136,8 @@
         "help": "<h2>Meet PCI DSS requirements</h2><ul><li>We enabled 90 day key rotation with IAM users provided by Terraform</li><li>No shared accounts</li><li>MFA was mandatory</li><li>We found some issues trying to use MFA with the 2nd factor auth, we came up with a combination of permissions in which we allowed actions to validate MFA codes without 2FA and ensure all other actions were protected (don't recall the details)</li><li>All in all, it was decent controls since a small portion of the whole engineering team was allowed to enter PCI accounts, but manually provided</li></ul>",
         "bullets": [
             "Individual named accounts (firstname.lastname)",
+            "Managed groups (Admin, Developer, ReadOnly)",
+            "Terraformed management groups and users",
             "MFA enforcement + 90-day key rotation",
             "NLP Algorithm to detect if a user is a real person based on slack notifications",
             "<span class=\"secondary-highlight\">Trade-off</span>: Complex credential management vs. compliance"
@@ -159,7 +161,7 @@
         "prompt": "terraform --iam-scale",
         "title": "Terraform at Scale",
         "subtitle": "Infrastructure as Code",
-        "help": "<h2>Terraform as starting point</h2><ul><li>Terraform was the methodology we spread to engineering to create resources</li><li>Modules were created to define common trustings for different kind of services</li><li>Permissions boundary was mandatory in order to allow roles creation</li><li>We created some predefined roles for common services</li><li>It was decently managed, but it was hard to keep up with the least privilege principle, it was partially successful after all</li><li>Terraform was manually applied by senior engineers on each pod</li></ul>",
+        "help": "<h2>Terraform as starting point</h2><ul><li>Terraform was the methodology we spread to engineering to create resources</li><li>Modules were created to define common trustings for different kind of services</li><li>Permissions boundary was mandatory in order to allow roles creation</li><li>We created some predefined roles for common services</li><li>It was decently managed, but it was hard to keep up with the least privilege principle, it was partially successful after all</li><li>Terraform was manually applied by senior engineers on each pod</li> <li>Infrastructure team managed centralized landing code</li>  </ul>",
         "bullets": [
             "Standardized role modules (EC2, Lambda, EKS-IRSA)",
             "Automatic permission boundary application",
