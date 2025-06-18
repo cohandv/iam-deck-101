@@ -242,7 +242,7 @@
         ],
         "code": {
             "lang": "bash",
-            "content": "# Let's connect and collaborate\ngit clone https://github.com/cohandv/iam-deck-101\ncd iam-deck-101 && npm install\nnpm start # Let's build something awesome!"
+            "content": "# Let's connect and collaborate\ngit clone https://github.com/cohandv/iam-deck-101\ncd iam-deck-101 && npm install\nnpm run start # Enjoy!"
         },
         "status": {
             "left": [
