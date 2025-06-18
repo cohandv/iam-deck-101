@@ -137,6 +137,7 @@
         "bullets": [
             "Individual named accounts (firstname.lastname)",
             "MFA enforcement + 90-day key rotation",
+            "NLP Algorithm to detect if a user is a real person based on slack notifications",
             "<span class=\"secondary-highlight\">Trade-off</span>: Complex credential management vs. compliance"
         ],
         "code": {
