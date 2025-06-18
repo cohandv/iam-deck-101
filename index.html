@@ -365,11 +365,12 @@
             width: 98vw;
             height: auto;
             overflow-y: auto;
-            z-index: 2000;
+            z-index: 2001; /* always above overlay */
             display: none;
             color: #e0e0e0;
             font-size: 1.15rem;
             line-height: 1.7;
+            pointer-events: auto;
         }
 
         .help-dialog.active {
@@ -393,13 +394,11 @@
 
         .help-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 1999;
+            z-index: 2000;
             display: none;
+            pointer-events: auto;
         }
 
         .help-overlay.active {
@@ -418,13 +417,34 @@
             line-height: 1.7;
         }
 
-        .help-dialog.image-only .help-content {
-            display: none;
+        .help-dialog.image-only {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2001;
+            background: rgba(26, 32, 44, 0.97);
+            max-width: 70vw;
+            max-height: 98vh;
+            overflow: auto;
+            padding: 0;
+            margin: 0;
+            flex-direction: column;
+            align-items: center;
         }
-        .help-dialog.image-only .help-dialog-image {
+        .help-dialog.active.image-only {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: auto;
+            max-height: 98vh;
+        }
+        .help-dialog.active.image-only .help-dialog-image {
             display: block;
-            max-width: 90vw;
-            max-height: 80vh;
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: none;
             margin: 0 auto;
             border-radius: 10px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.4);
@@ -633,6 +653,7 @@
             newUrl.searchParams.set('slide', currentSlide + 1);
             window.history.pushState({ slide: currentSlide }, '', newUrl);
             console.log('showSlide set currentSlide to:', currentSlide);
+            if (helpVisible) toggleHelp(false);
         }
 
         // Handle browser back/forward navigation
@@ -699,6 +720,8 @@
             helpDialog.classList.toggle('active', helpVisible);
             helpOverlay.classList.toggle('active', helpVisible);
             if (helpVisible) updateHelpDialog();
+            // Debug log
+            console.log('[DEBUG] toggleHelp called. helpVisible:', helpVisible, 'helpDialog.classList:', helpDialog.classList.value, 'helpOverlay.classList:', helpOverlay.classList.value);
         }
 
         // Add keyboard event listener for navigation and help
@@ -723,17 +746,19 @@
             }
         });
 
-        // Close help dialog when clicking overlay or dialog background (but not the image)
+        // Close help dialog when clicking overlay (always closes, regardless of mode)
         helpOverlay.addEventListener('click', () => {
+            console.log('[DEBUG] helpOverlay clicked, helpVisible:', helpVisible);
             if (helpVisible) {
                 toggleHelp(false);
             }
         });
-        helpDialog.addEventListener('click', (e) => {
-            if (helpVisible && helpImageOnly && e.target === helpDialog) {
-                toggleHelp(false);
-            }
-        });
+        // Remove dialog background click-to-close logic (not needed if overlay works)
+        // helpDialog.addEventListener('click', (e) => {
+        //     if (helpVisible && helpImageOnly && e.target === helpDialog) {
+        //         toggleHelp(false);
+        //     }
+        // });
 
         function updateFooterStatusBar() {
             const slide = slideData[currentSlide];
