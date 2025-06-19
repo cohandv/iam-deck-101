@@ -218,7 +218,7 @@
             "<span class=\"secondary-highlight\">Missed</span>: AWS SSO instead of IAM Users (better traceability)",
             "<span class=\"secondary-highlight\">Missed</span>: Automated Terraform pipelines vs. manual",
             "<span class=\"secondary-highlight\">Missed</span>: Remove developer write access entirely",
-            "<span class=\"highlight\">Future</span>: Application-centric identity platform with automated lifecycle"
+            "<span class=\"highlight\">Future</span>: Application-centric internal platform with automated lifecycle"
         ],
         "code": {
             "lang": "bash",
